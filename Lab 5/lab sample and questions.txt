@@ -1,0 +1,145 @@
+College of Engineering and Management, Kolaghat
+Network Laboratory, ( Summer Semester, 2021, CSE)
+
+Experiment: Simple Client
+		( Open a port and read the message from server )
+
+/* ------------------------- Snip ----------------------------------- */
+/*****************************************************************************/
+/*** simple-client.c                                                       														     ***/
+/***                                                                       																		 ***/
+/*****************************************************************************/
+
+/**************************************************************************
+*   This is a simple client socket reader.  It opens a socket, connects
+*   to a server, reads the message, and closes.
+**************************************************************************/
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <resolv.h>
+#include <stdlib.h>
+
+#define PORT_TIME       13              /* "time" (not available on RedHat) */
+#define PORT_FTP        21              /* FTP connection port */
+#define SERVER_ADDR     "127.0.0.1"     /* localhost */
+#define MAXBUF          1024
+
+int main()
+{   int sockfd;
+    struct sockaddr_in dest;
+    char buffer[MAXBUF];
+
+    /*---Open socket for streaming---*/
+    if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 )
+    {
+        perror("Socket");
+        exit(errno);
+    }
+
+    /*---Initialize server address/port struct---*/
+    bzero(&dest, sizeof(dest));
+    dest.sin_family = AF_INET;
+    dest.sin_port = htons(PORT_FTP);
+    if ( inet_aton(SERVER_ADDR, &dest.sin_addr) == 0 )
+    {
+        perror(SERVER_ADDR);
+        exit(errno);
+    }
+
+    /*---Connect to server---*/
+    if ( connect(sockfd, (struct sockaddr*)&dest, sizeof(dest)) != 0 )
+    {
+        perror("Connect ");
+        exit(errno);
+    }
+
+    /*---Get "Hello?"---*/
+    bzero(buffer, MAXBUF);
+    recv(sockfd, buffer, sizeof(buffer), 0);
+    printf("%s", buffer);
+
+    /*---Clean up---*/
+    close(sockfd);
+    return 0;
+}
+/* ------------------------------ Snip ------------------------------ */
+
+Assignment:
+1. Take the server IP address and port number from command line and perform
+   the same.
+
+2. Take the server IP address and the range of port number from command line
+   and report which port within that range on that server are open with 
+   protocol name.
+    (Hint: for a particular port number if connection open is successfull
+    that port is open otherwise close; report only open ports)
+    
+    
+    
+############################################################################################################
+    
+College of Engineering and Management, Kolaghat
+Network Laboratory, ( Summer Semester, 2021, CSE)
+Experiment: Echo Client
+-------------------------- Snip --------------------------------
+/***************************************************************************/
+/*** echo-client.c                                                       ***/
+/***                                                                     ***/
+/***************************************************************************/
+
+/*************************************************************************
+*	This is a simple echo client.  
+**************************************************************************/
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <resolv.h>
+#include <errno.h>
+#include <unistd.h>
+
+#define MAXBUF	1024
+
+int main(int Count, char *Strings[])
+{	
+	int sock;
+	struct sockaddr_in dest;
+	char buf[MAXBUF];
+	
+	if(Count != 3){
+		printf("USAGE: %s <server port number> <server IP address>\n",Strings[0]);
+		exit(0);
+		
+	}
+	
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	
+	dest.sin_family = AF_INET;
+	dest.sin_port = htons(atoi(Strings[2]));
+	inet_aton(Strings[1], &dest.sin_addr);
+	
+	connect(sock, (struct sockaddr *)&dest, sizeof(dest));
+	
+	memset(buf, 0, MAXBUF);
+	fgets(buf, MAXBUF, stdin);
+	send(sock, buf, strlen(buf), 0);
+	
+	memset(buf, 0, MAXBUF);
+	recv(sock, buf, MAXBUF, 0);
+	printf("%s\n",buf);
+	
+	close(sock);
+}
+
+--------------------------- Snip -----------------------------------
+
+Assignment:
+Modify the client so that it will continuously take echo service from the echo server. The client wiil do this untill it send ane receive string "EXIT" from
+and close connection.
+(*HINT: After establishing connection go into a indefinite loop and perform send and recv operation. Break from loop when receive "EXIT" string.)
